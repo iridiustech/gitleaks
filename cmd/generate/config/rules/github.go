@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"regexp"
 
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
@@ -10,7 +11,7 @@ import (
 func GitHubPat() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "GitHub Personal Access Token",
+		Description: "Uncovered a GitHub Personal Access Token, potentially leading to unauthorized repository access and sensitive content exposure.",
 		RuleID:      "github-pat",
 		Regex:       regexp.MustCompile(`ghp_[0-9a-zA-Z]{36}`),
 		Keywords:    []string{"ghp_"},
@@ -18,15 +19,15 @@ func GitHubPat() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("github", "ghp_"+secrets.NewSecret(alphaNumeric("36"))),
+		utils.GenerateSampleSecret("github", "ghp_"+secrets.NewSecret(utils.AlphaNumeric("36"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func GitHubFineGrainedPat() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "GitHub Fine-Grained Personal Access Token",
+		Description: "Found a GitHub Fine-Grained Personal Access Token, risking unauthorized repository access and code manipulation.",
 		RuleID:      "github-fine-grained-pat",
 		Regex:       regexp.MustCompile(`github_pat_[0-9a-zA-Z_]{82}`),
 		Keywords:    []string{"github_pat_"},
@@ -34,15 +35,15 @@ func GitHubFineGrainedPat() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("github", "github_pat_"+secrets.NewSecret(alphaNumeric("82"))),
+		utils.GenerateSampleSecret("github", "github_pat_"+secrets.NewSecret(utils.AlphaNumeric("82"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func GitHubOauth() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "GitHub OAuth Access Token",
+		Description: "Discovered a GitHub OAuth Access Token, posing a risk of compromised GitHub account integrations and data leaks.",
 		RuleID:      "github-oauth",
 		Regex:       regexp.MustCompile(`gho_[0-9a-zA-Z]{36}`),
 		Keywords:    []string{"gho_"},
@@ -50,32 +51,32 @@ func GitHubOauth() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("github", "gho_"+secrets.NewSecret(alphaNumeric("36"))),
+		utils.GenerateSampleSecret("github", "gho_"+secrets.NewSecret(utils.AlphaNumeric("36"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func GitHubApp() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "GitHub App Token",
+		Description: "Identified a GitHub App Token, which may compromise GitHub application integrations and source code security.",
 		RuleID:      "github-app-token",
-		Regex:       regexp.MustCompile(`(ghu|ghs)_[0-9a-zA-Z]{36}`),
+		Regex:       regexp.MustCompile(`(?:ghu|ghs)_[0-9a-zA-Z]{36}`),
 		Keywords:    []string{"ghu_", "ghs_"},
 	}
 
 	// validate
 	tps := []string{
-		generateSampleSecret("github", "ghu_"+secrets.NewSecret(alphaNumeric("36"))),
-		generateSampleSecret("github", "ghs_"+secrets.NewSecret(alphaNumeric("36"))),
+		utils.GenerateSampleSecret("github", "ghu_"+secrets.NewSecret(utils.AlphaNumeric("36"))),
+		utils.GenerateSampleSecret("github", "ghs_"+secrets.NewSecret(utils.AlphaNumeric("36"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func GitHubRefresh() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "GitHub Refresh Token",
+		Description: "Detected a GitHub Refresh Token, which could allow prolonged unauthorized access to GitHub services.",
 		RuleID:      "github-refresh-token",
 		Regex:       regexp.MustCompile(`ghr_[0-9a-zA-Z]{36}`),
 		Keywords:    []string{"ghr_"},
@@ -83,7 +84,7 @@ func GitHubRefresh() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("github", "ghr_"+secrets.NewSecret(alphaNumeric("36"))),
+		utils.GenerateSampleSecret("github", "ghr_"+secrets.NewSecret(utils.AlphaNumeric("36"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }

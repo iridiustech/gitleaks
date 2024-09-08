@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"regexp"
 
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
@@ -10,31 +11,31 @@ import (
 func EasyPost() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "EasyPost API token",
+		Description: "Identified an EasyPost API token, which could lead to unauthorized postal and shipment service access and data exposure.",
 		RuleID:      "easypost-api-token",
-		Regex:       regexp.MustCompile(`EZAK(?i)[a-z0-9]{54}`),
+		Regex:       regexp.MustCompile(`\bEZAK(?i)[a-z0-9]{54}`),
 		Keywords:    []string{"EZAK"},
 	}
 
 	// validate
 	tps := []string{
-		generateSampleSecret("EZAK", "EZAK"+secrets.NewSecret(alphaNumeric("54"))),
+		utils.GenerateSampleSecret("EZAK", "EZAK"+secrets.NewSecret(utils.AlphaNumeric("54"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func EasyPostTestAPI() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "EasyPost test API token",
+		Description: "Detected an EasyPost test API token, risking exposure of test environments and potentially sensitive shipment data.",
 		RuleID:      "easypost-test-api-token",
-		Regex:       regexp.MustCompile(`EZTK(?i)[a-z0-9]{54}`),
+		Regex:       regexp.MustCompile(`\bEZTK(?i)[a-z0-9]{54}`),
 		Keywords:    []string{"EZTK"},
 	}
 
 	// validate
 	tps := []string{
-		generateSampleSecret("EZTK", "EZTK"+secrets.NewSecret(alphaNumeric("54"))),
+		utils.GenerateSampleSecret("EZTK", "EZTK"+secrets.NewSecret(utils.AlphaNumeric("54"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }

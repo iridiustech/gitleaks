@@ -2,8 +2,8 @@ package config
 
 import (
 	_ "embed"
-	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -36,17 +36,19 @@ type ViperConfig struct {
 		Tags        []string
 
 		Allowlist struct {
-			Regexes   []string
-			Paths     []string
-			Commits   []string
-			StopWords []string
+			RegexTarget string
+			Regexes     []string
+			Paths       []string
+			Commits     []string
+			StopWords   []string
 		}
 	}
 	Allowlist struct {
-		Regexes   []string
-		Paths     []string
-		Commits   []string
-		StopWords []string
+		RegexTarget string
+		Regexes     []string
+		Paths       []string
+		Commits     []string
+		StopWords   []string
 	}
 }
 
@@ -60,7 +62,7 @@ type Config struct {
 	Keywords    []string
 
 	// used to keep sarif results consistent
-	orderedRules []string
+	OrderedRules []string
 }
 
 // Extend is a struct that allows users to define how they want their
@@ -113,8 +115,8 @@ func (vc *ViperConfig) Translate() (Config, error) {
 			configPathRegex = regexp.MustCompile(r.Path)
 		}
 		r := Rule{
-			Description: r.Description,
 			RuleID:      r.ID,
+			Description: r.Description,
 			Regex:       configRegex,
 			Path:        configPathRegex,
 			SecretGroup: r.SecretGroup,
@@ -122,17 +124,18 @@ func (vc *ViperConfig) Translate() (Config, error) {
 			Tags:        r.Tags,
 			Keywords:    r.Keywords,
 			Allowlist: Allowlist{
-				Regexes:   allowlistRegexes,
-				Paths:     allowlistPaths,
-				Commits:   r.Allowlist.Commits,
-				StopWords: r.Allowlist.StopWords,
+				RegexTarget: r.Allowlist.RegexTarget,
+				Regexes:     allowlistRegexes,
+				Paths:       allowlistPaths,
+				Commits:     r.Allowlist.Commits,
+				StopWords:   r.Allowlist.StopWords,
 			},
 		}
-		orderedRules = append(orderedRules, r.RuleID)
-
-		if r.Regex != nil && r.SecretGroup > r.Regex.NumSubexp() {
-			return Config{}, fmt.Errorf("%s invalid regex secret group %d, max regex secret group %d", r.Description, r.SecretGroup, r.Regex.NumSubexp())
+		if err := r.Validate(); err != nil {
+			return Config{}, err
 		}
+
+		orderedRules = append(orderedRules, r.RuleID)
 		rulesMap[r.RuleID] = r
 	}
 	var allowlistRegexes []*regexp.Regexp
@@ -148,13 +151,14 @@ func (vc *ViperConfig) Translate() (Config, error) {
 		Extend:      vc.Extend,
 		Rules:       rulesMap,
 		Allowlist: Allowlist{
-			Regexes:   allowlistRegexes,
-			Paths:     allowlistPaths,
-			Commits:   vc.Allowlist.Commits,
-			StopWords: vc.Allowlist.StopWords,
+			RegexTarget: vc.Allowlist.RegexTarget,
+			Regexes:     allowlistRegexes,
+			Paths:       allowlistPaths,
+			Commits:     vc.Allowlist.Commits,
+			StopWords:   vc.Allowlist.StopWords,
 		},
 		Keywords:     keywords,
-		orderedRules: orderedRules,
+		OrderedRules: orderedRules,
 	}
 
 	if maxExtendDepth != extendDepth {
@@ -173,9 +177,9 @@ func (vc *ViperConfig) Translate() (Config, error) {
 	return c, nil
 }
 
-func (c *Config) OrderedRules() []Rule {
+func (c *Config) GetOrderedRules() []Rule {
 	var orderedRules []Rule
-	for _, id := range c.orderedRules {
+	for _, id := range c.OrderedRules {
 		if _, ok := c.Rules[id]; ok {
 			orderedRules = append(orderedRules, c.Rules[id])
 		}
@@ -236,6 +240,7 @@ func (c *Config) extend(extensionConfig Config) {
 			log.Trace().Msgf("adding %s to base config", ruleID)
 			c.Rules[ruleID] = rule
 			c.Keywords = append(c.Keywords, rule.Keywords...)
+			c.OrderedRules = append(c.OrderedRules, ruleID)
 		}
 	}
 
@@ -246,4 +251,7 @@ func (c *Config) extend(extensionConfig Config) {
 		extensionConfig.Allowlist.Paths...)
 	c.Allowlist.Regexes = append(c.Allowlist.Regexes,
 		extensionConfig.Allowlist.Regexes...)
+
+	// sort to keep extended rules in order
+	sort.Strings(c.OrderedRules)
 }

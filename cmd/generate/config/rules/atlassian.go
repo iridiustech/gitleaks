@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
 	"github.com/zricethezav/gitleaks/v8/config"
 )
@@ -8,18 +9,17 @@ import (
 func Atlassian() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "Atlassian API token",
+		Description: "Detected an Atlassian API token, posing a threat to project management and collaboration tool security and data confidentiality.",
 		RuleID:      "atlassian-api-token",
-		Regex: generateSemiGenericRegex([]string{
-			"atlassian", "confluence", "jira"}, alphaNumeric("24")),
-		SecretGroup: 1,
-		Keywords:    []string{"atlassian", "confluence", "jira"},
+		Regex: utils.GenerateSemiGenericRegex([]string{
+			"atlassian", "confluence", "jira"}, utils.AlphaNumeric("24"), true),
+		Keywords: []string{"atlassian", "confluence", "jira"},
 	}
 
 	// validate
 	tps := []string{
-		generateSampleSecret("atlassian", secrets.NewSecret(alphaNumeric("24"))),
-		generateSampleSecret("confluence", secrets.NewSecret(alphaNumeric("24"))),
+		utils.GenerateSampleSecret("atlassian", secrets.NewSecret(utils.AlphaNumeric("24"))),
+		utils.GenerateSampleSecret("confluence", secrets.NewSecret(utils.AlphaNumeric("24"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }

@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
 	"github.com/zricethezav/gitleaks/v8/config"
 )
@@ -9,9 +10,9 @@ func PlanetScalePassword() *config.Rule {
 	// define rule
 	r := config.Rule{
 		RuleID:      "planetscale-password",
-		Description: "PlanetScale password",
-		Regex:       generateUniqueTokenRegex(`pscale_pw_(?i)[a-z0-9=\-_\.]{32,64}`),
-		SecretGroup: 1,
+		Description: "Discovered a PlanetScale password, which could lead to unauthorized database operations and data breaches.",
+		Regex:       utils.GenerateUniqueTokenRegex(`pscale_pw_(?i)[a-z0-9=\-_\.]{32,64}`, true),
+
 		Keywords: []string{
 			"pscale_pw_",
 		},
@@ -19,20 +20,20 @@ func PlanetScalePassword() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(alphaNumericExtended("32"))),
-		generateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(alphaNumericExtended("43"))),
-		generateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(alphaNumericExtended("64"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(utils.AlphaNumericExtended("32"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(utils.AlphaNumericExtended("43"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_pw_"+secrets.NewSecret(utils.AlphaNumericExtended("64"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func PlanetScaleAPIToken() *config.Rule {
 	// define rule
 	r := config.Rule{
 		RuleID:      "planetscale-api-token",
-		Description: "PlanetScale API token",
-		Regex:       generateUniqueTokenRegex(`pscale_tkn_(?i)[a-z0-9=\-_\.]{32,64}`),
-		SecretGroup: 1,
+		Description: "Identified a PlanetScale API token, potentially compromising database management and operations.",
+		Regex:       utils.GenerateUniqueTokenRegex(`pscale_tkn_(?i)[a-z0-9=\-_\.]{32,64}`, true),
+
 		Keywords: []string{
 			"pscale_tkn_",
 		},
@@ -40,20 +41,20 @@ func PlanetScaleAPIToken() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(alphaNumericExtended("32"))),
-		generateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(alphaNumericExtended("43"))),
-		generateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(alphaNumericExtended("64"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(utils.AlphaNumericExtended("32"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(utils.AlphaNumericExtended("43"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_tkn_"+secrets.NewSecret(utils.AlphaNumericExtended("64"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 func PlanetScaleOAuthToken() *config.Rule {
 	// define rule
 	r := config.Rule{
 		RuleID:      "planetscale-oauth-token",
-		Description: "PlanetScale OAuth token",
-		Regex:       generateUniqueTokenRegex(`pscale_oauth_(?i)[a-z0-9=\-_\.]{32,64}`),
-		SecretGroup: 1,
+		Description: "Found a PlanetScale OAuth token, posing a risk to database access control and sensitive data integrity.",
+		Regex:       utils.GenerateUniqueTokenRegex(`pscale_oauth_(?i)[a-z0-9=\-_\.]{32,64}`, true),
+
 		Keywords: []string{
 			"pscale_oauth_",
 		},
@@ -61,9 +62,9 @@ func PlanetScaleOAuthToken() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(alphaNumericExtended("32"))),
-		generateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(alphaNumericExtended("43"))),
-		generateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(alphaNumericExtended("64"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(utils.AlphaNumericExtended("32"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(utils.AlphaNumericExtended("43"))),
+		utils.GenerateSampleSecret("planetScalePassword", "pscale_oauth_"+secrets.NewSecret(utils.AlphaNumericExtended("64"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }

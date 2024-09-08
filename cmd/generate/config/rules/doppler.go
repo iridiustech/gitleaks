@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"regexp"
 
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
@@ -10,17 +11,17 @@ import (
 func Doppler() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "Doppler API token",
+		Description: "Discovered a Doppler API token, posing a risk to environment and secrets management security.",
 		RuleID:      "doppler-api-token",
-		Regex:       regexp.MustCompile(`(dp\.pt\.)(?i)[a-z0-9]{43}`),
+		Regex:       regexp.MustCompile(`dp\.pt\.(?i)[a-z0-9]{43}`),
 		Keywords:    []string{"doppler"},
 	}
 
 	// validate
 	tps := []string{
-		generateSampleSecret("doppler", "dp.pt."+secrets.NewSecret(alphaNumeric("43"))),
+		utils.GenerateSampleSecret("doppler", "dp.pt."+secrets.NewSecret(utils.AlphaNumeric("43"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }
 
 // TODO add additional doppler formats:

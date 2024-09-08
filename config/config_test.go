@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const configPath = "../testdata/config/"
@@ -22,7 +23,7 @@ func TestTranslate(t *testing.T) {
 			cfg: Config{
 				Rules: map[string]Rule{"aws-access-key": {
 					Description: "AWS Access Key",
-					Regex:       regexp.MustCompile("(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"),
+					Regex:       regexp.MustCompile("(?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}"),
 					Tags:        []string{"key", "AWS"},
 					Keywords:    []string{},
 					RuleID:      "aws-access-key",
@@ -40,7 +41,7 @@ func TestTranslate(t *testing.T) {
 			cfg: Config{
 				Rules: map[string]Rule{"aws-access-key": {
 					Description: "AWS Access Key",
-					Regex:       regexp.MustCompile("(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"),
+					Regex:       regexp.MustCompile("(?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}"),
 					Tags:        []string{"key", "AWS"},
 					Keywords:    []string{},
 					RuleID:      "aws-access-key",
@@ -56,7 +57,7 @@ func TestTranslate(t *testing.T) {
 			cfg: Config{
 				Rules: map[string]Rule{"aws-access-key": {
 					Description: "AWS Access Key",
-					Regex:       regexp.MustCompile("(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"),
+					Regex:       regexp.MustCompile("(?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}"),
 					Tags:        []string{"key", "AWS"},
 					Keywords:    []string{},
 					RuleID:      "aws-access-key",
@@ -86,9 +87,19 @@ func TestTranslate(t *testing.T) {
 			},
 		},
 		{
+			cfgName:   "missing_id",
+			cfg:       Config{},
+			wantError: fmt.Errorf("rule |id| is missing or empty, regex: (?i)(discord[a-z0-9_ .\\-,]{0,25})(=|>|:=|\\|\\|:|<=|=>|:).{0,5}['\\\"]([a-h0-9]{64})['\\\"]"),
+		},
+		{
+			cfgName:   "no_regex_or_path",
+			cfg:       Config{},
+			wantError: fmt.Errorf("discord-api-key: both |regex| and |path| are empty, this rule will have no effect"),
+		},
+		{
 			cfgName:   "bad_entropy_group",
 			cfg:       Config{},
-			wantError: fmt.Errorf("Discord API key invalid regex secret group 5, max regex secret group 3"),
+			wantError: fmt.Errorf("discord-api-key: invalid regex secret group 5, max regex secret group 3"),
 		},
 		{
 			cfgName: "base",
@@ -96,7 +107,7 @@ func TestTranslate(t *testing.T) {
 				Rules: map[string]Rule{
 					"aws-access-key": {
 						Description: "AWS Access Key",
-						Regex:       regexp.MustCompile("(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"),
+						Regex:       regexp.MustCompile("(?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}"),
 						Tags:        []string{"key", "AWS"},
 						Keywords:    []string{},
 						RuleID:      "aws-access-key",
@@ -121,28 +132,20 @@ func TestTranslate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		viper.Reset()
-		viper.AddConfigPath(configPath)
-		viper.SetConfigName(tt.cfgName)
-		viper.SetConfigType("toml")
-		err := viper.ReadInConfig()
-		if err != nil {
-			t.Error(err)
-		}
+		t.Run(tt.cfgName, func(t *testing.T) {
+			viper.Reset()
+			viper.AddConfigPath(configPath)
+			viper.SetConfigName(tt.cfgName)
+			viper.SetConfigType("toml")
+			err := viper.ReadInConfig()
+			require.NoError(t, err)
 
-		var vc ViperConfig
-		err = viper.Unmarshal(&vc)
-		if err != nil {
-			t.Error(err)
-		}
-		cfg, err := vc.Translate()
-		if tt.wantError != nil {
-			if err == nil {
-				t.Errorf("expected error")
-			}
+			var vc ViperConfig
+			err = viper.Unmarshal(&vc)
+			require.NoError(t, err)
+			cfg, err := vc.Translate()
 			assert.Equal(t, tt.wantError, err)
-		}
-
-		assert.Equal(t, cfg.Rules, tt.cfg.Rules)
+			assert.Equal(t, cfg.Rules, tt.cfg.Rules)
+		})
 	}
 }

@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
 	"github.com/zricethezav/gitleaks/v8/config"
 )
@@ -9,9 +10,8 @@ func CodecovAccessToken() *config.Rule {
 	// define rule
 	r := config.Rule{
 		RuleID:      "codecov-access-token",
-		Description: "Codecov Access Token",
-		Regex:       generateSemiGenericRegex([]string{"codecov"}, alphaNumeric("32")),
-		SecretGroup: 1,
+		Description: "Found a pattern resembling a Codecov Access Token, posing a risk of unauthorized access to code coverage reports and sensitive data.",
+		Regex:       utils.GenerateSemiGenericRegex([]string{"codecov"}, utils.AlphaNumeric("32"), true),
 		Keywords: []string{
 			"codecov",
 		},
@@ -19,7 +19,7 @@ func CodecovAccessToken() *config.Rule {
 
 	// validate
 	tps := []string{
-		generateSampleSecret("codecov", secrets.NewSecret(alphaNumeric("32"))),
+		utils.GenerateSampleSecret("codecov", secrets.NewSecret(utils.AlphaNumeric("32"))),
 	}
-	return validate(r, tps, nil)
+	return utils.Validate(r, tps, nil)
 }

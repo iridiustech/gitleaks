@@ -14,6 +14,15 @@ type Allowlist struct {
 	// Regexes is slice of content regular expressions that are allowed to be ignored.
 	Regexes []*regexp.Regexp
 
+	// Can be `match` or `line`.
+	//
+	// If `match` the _Regexes_ will be tested against the match of the _Rule.Regex_.
+	//
+	// If `line` the _Regexes_ will be tested against the entire line.
+	//
+	// If RegexTarget is empty, it will be tested against the found secret.
+	RegexTarget string
+
 	// Paths is a slice of path regular expressions that are allowed to be ignored.
 	Paths []*regexp.Regexp
 
